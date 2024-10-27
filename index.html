@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Clock HTML - Tanbaycu</title>
+    <style>
+      :root {
+        --clock-size: 250px;
+        --primary-color: #6c63ff;
+        --secondary-color: #4caf50;
+        --surface-color: #1e293b;
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --accent-color: #ffa500;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #0f172a;
+      }
+
+      .clock-widget {
+        width: var(--clock-size);
+        background-color: var(--surface-color);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .clock-widget::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: conic-gradient(
+          from 0deg,
+          transparent,
+          var(--primary-color),
+          transparent 30%
+        );
+        animation: rotate 10s linear infinite;
+        z-index: 0;
+      }
+
+      .clock-widget::after {
+        content: "";
+        position: absolute;
+        inset: 5px;
+        background: var(--surface-color);
+        border-radius: 15px;
+        z-index: 1;
+      }
+
+      @keyframes rotate {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .clock-content {
+        position: relative;
+        z-index: 2;
+      }
+
+      .clock-face {
+        position: relative;
+        width: 100%;
+        height: 0;
+        padding-bottom: 100%;
+        background: radial-gradient(
+          circle,
+          var(--surface-color) 85%,
+          var(--primary-color)
+        );
+        border-radius: 50%;
+        overflow: hidden;
+      }
+
+      .hand {
+        position: absolute;
+        bottom: 50%;
+        left: 50%;
+        transform-origin: 50% 100%;
+        border-radius: 5px;
+        z-index: 10;
+        transition: transform 0.5s cubic-bezier(0.4, 2.3, 0.3, 1);
+      }
+
+      .hour-hand {
+        width: 8px;
+        height: 30%;
+        background-color: var(--text-primary);
+      }
+
+      .minute-hand {
+        width: 6px;
+        height: 40%;
+        background-color: var(--text-primary);
+      }
+
+      .second-hand {
+        width: 2px;
+        height: 45%;
+        background-color: var(--accent-color);
+      }
+
+      .center-dot {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 12px;
+        height: 12px;
+        background-color: var(--primary-color);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 20;
+      }
+
+      .digital-time {
+        position: absolute;
+        bottom: 25%;
+        left: 0;
+        right: 0;
+        text-align: center;
+        color: var(--text-primary);
+        font-size: 1.2em;
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(108, 99, 255, 0.5);
+      }
+
+      .date {
+        margin-top: 15px;
+        text-align: center;
+        color: var(--text-secondary);
+        font-size: 0.9em;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 15px;
+      }
+
+      .control-btn {
+        background: none;
+        border: none;
+        font-size: 1.2em;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 5px 10px;
+        border-radius: 5px;
+      }
+
+      .control-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+      }
+
+      .control-btn:active {
+        transform: translateY(0);
+      }
+
+      .alarm-popup {
+        display: none;
+        position: absolute;
+        bottom: 100%;
+        left: 0;
+        right: 0;
+        background-color: var(--surface-color);
+        padding: 15px;
+        border-radius: 15px 15px 0 0;
+        box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        z-index: 100;
+      }
+
+      .alarm-popup.show {
+        bottom: 0;
+        display: block;
+      }
+
+      .alarm-popup input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
+      }
+
+      .alarm-popup button {
+        width: 100%;
+        padding: 10px;
+        background-color: var(--primary-color);
+        color: var(--text-primary);
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .alarm-popup button:hover {
+        background-color: var(--secondary-color);
+      }
+
+      .clock-widget.dark-theme {
+        --surface-color: #121212;
+        --text-primary: #ffffff;
+        --text-secondary: #b0b0b0;
+      }
+
+      .fullscreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: var(--surface-color);
+      }
+
+      .fullscreen .clock-widget {
+        width: 80vmin;
+        height: 80vmin;
+      }
+
+      @media (max-width: 768px) {
+        :root {
+          --clock-size: 200px;
+        }
+
+        .digital-time {
+          font-size: 1em;
+        }
+
+        .date {
+          font-size: 0.8em;
+        }
+
+        .control-btn {
+          font-size: 1em;
+        }
+      }
+
+      @media (max-width: 480px) {
+        :root {
+          --clock-size: 150px;
+        }
+
+        .digital-time {
+          font-size: 0.9em;
+        }
+
+        .date {
+          font-size: 0.7em;
+        }
+
+        .control-btn {
+          font-size: 0.9em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="clock-widget" id="clock-widget">
+      <div class="clock-content">
+        <div class="clock-face">
+          <div class="hand hour-hand"></div>
+          <div class="hand minute-hand"></div>
+          <div class="hand second-hand"></div>
+          <div class="center-dot"></div>
+          <div class="digital-time" id="digital-time"></div>
+        </div>
+        <div class="date" id="date"></div>
+        <div class="controls">
+          <button
+            class="control-btn"
+            id="theme-toggle"
+            aria-label="Chuyển đổi chế độ sáng/tối"
+          >
+            🌓
+          </button>
+          <button class="control-btn" id="alarm-set" aria-label="Đặt báo thức">
+            ⏰
+          </button>
+          <button
+            class="control-btn"
+            id="fullscreen-toggle"
+            aria-label="Chế độ toàn màn hình"
+          >
+            🔍
+          </button>
+        </div>
+      </div>
+      <div class="alarm-popup" id="alarm-popup">
+        <input
+          type="time"
+          id="alarm-time"
+          aria-label="Chọn thời gian báo thức"
+        />
+        <button id="set-alarm">Đặt báo thức</button>
+      </div>
+    </div>
+
+    <script>
+      const clockWidget = document.getElementById("clock-widget");
+      const hourHand = document.querySelector(".hour-hand");
+      const minuteHand = document.querySelector(".minute-hand");
+      const secondHand = document.querySelector(".second-hand");
+      const digitalTime = document.getElementById("digital-time");
+      const dateDisplay = document.getElementById("date");
+      const themeToggle = document.getElementById("theme-toggle");
+      const alarmSetBtn = document.getElementById("alarm-set");
+      const fullscreenToggle = document.getElementById("fullscreen-toggle");
+      const alarmPopup = document.getElementById("alarm-popup");
+      const alarmTimeInput = document.getElementById("alarm-time");
+      const setAlarmBtn = document.getElementById("set-alarm");
+
+      let alarmTime = null;
+      let isFullscreen = false;
+
+      function updateClock() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const seconds = now.getSeconds();
+        const milliseconds = now.getMilliseconds();
+
+        const hourDeg = ((hours % 12) + minutes / 60) * 30;
+        const minuteDeg = (minutes + seconds / 60) * 6;
+        const secondDeg = (seconds + milliseconds / 1000) * 6;
+
+        hourHand.style.transform = `rotate(${hourDeg}deg)`;
+        minuteHand.style.transform = `rotate(${minuteDeg}deg)`;
+        secondHand.style.transform = `rotate(${secondDeg}deg)`;
+
+        digitalTime.textContent = now.toLocaleTimeString("vi-VN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+        dateDisplay.textContent = now.toLocaleDateString("vi-VN", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        });
+
+        if (alarmTime && Math.abs(now - alarmTime) < 1000) {
+          playAlarm();
+        }
+
+        requestAnimationFrame(updateClock);
+      }
+
+      function toggleTheme() {
+        clockWidget.classList.toggle("dark-theme");
+        const isDarkTheme = clockWidget.classList.contains("dark-theme");
+        themeToggle.textContent = isDarkTheme ? "🌞" : "🌓";
+        themeToggle.setAttribute(
+          "aria-label",
+          isDarkTheme ? "Chuyển sang chế độ sáng" : "Chuyển sang chế độ tối"
+        );
+      }
+
+      function toggleAlarmPopup() {
+        alarmPopup.classList.toggle("show");
+        if (alarmPopup.classList.contains("show")) {
+          alarmTimeInput.focus();
+        }
+      }
+
+      function toggleFullscreen() {
+        if (!isFullscreen) {
+          if (clockWidget.requestFullscreen) {
+            clockWidget.requestFullscreen();
+          } else if (clockWidget.mozRequestFullScreen) {
+            clockWidget.mozRequestFullScreen();
+          } else if (clockWidget.webkitRequestFullscreen) {
+            clockWidget.webkitRequestFullscreen();
+          } else if (clockWidget.msRequestFullscreen) {
+            clockWidget.msRequestFullscreen();
+          }
+          clockWidget.classList.add("fullscreen");
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+          }
+          clockWidget.classList.remove("fullscreen");
+        }
+        isFullscreen = !isFullscreen;
+        fullscreenToggle.textContent = isFullscreen ? "🔙" : "🔍";
+        fullscreenToggle.setAttribute(
+          "aria-label",
+          isFullscreen ? "Thoát chế độ toàn màn hình" : "Chế độ toàn màn hình"
+        );
+      }
+
+      function setAlarm() {
+        const [hours, minutes] = alarmTimeInput.value.split(":");
+        const now = new Date();
+        alarmTime = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+          hours,
+          minutes
+        );
+        if (alarmTime < now) {
+          alarmTime.setDate(alarmTime.getDate() + 1);
+        }
+        alert(
+          `Báo thức đã được đặt cho ${alarmTime.toLocaleTimeString("vi-VN")}`
+        );
+        toggleAlarmPopup();
+      }
+
+      function playAlarm() {
+        const audio = new Audio(
+          "https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3"
+        );
+        audio.play();
+        alarmTime = null;
+        alert("Báo thức!");
+      }
+
+      themeToggle.addEventListener("click", toggleTheme);
+      alarmSetBtn.addEventListener(
+        "click",
+
+        toggleAlarmPopup
+      );
+      fullscreenToggle.addEventListener("click", toggleFullscreen);
+      setAlarmBtn.addEventListener("click", setAlarm);
+
+      document.addEventListener("fullscreenchange", () => {
+        if (!document.fullscreenElement) {
+          clockWidget.classList.remove("fullscreen");
+          isFullscreen = false;
+          fullscreenToggle.textContent = "🔍";
+          fullscreenToggle.setAttribute("aria-label", "Chế độ toàn màn hình");
+        }
+      });
+
+      updateClock();
+    </script>
+  </body>
+</html>
